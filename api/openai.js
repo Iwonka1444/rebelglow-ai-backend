@@ -1,14 +1,20 @@
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Only POST allowed' });
     return;
   }
-  const { message } = req.body;
+  let message;
+  try {
+    message = req.body?.message || (await req.json())?.message;
+  } catch (e) {
+    res.status(400).json({ error: 'Invalid JSON' });
+    return;
+  }
   if (!message) {
     res.status(400).json({ error: 'No message provided' });
     return;
   }
+
   const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
   const apiRes = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -24,4 +30,6 @@ export default async function handler(req, res) {
     })
   });
   const data = await apiRes.json();
-  const content = data.ch
+  const content = data.choices?.[0]?.message?.content || "AI error";
+  res.status(200).json({ text: content });
+}
