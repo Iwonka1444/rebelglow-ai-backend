@@ -1,3 +1,4 @@
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Only POST allowed' });
