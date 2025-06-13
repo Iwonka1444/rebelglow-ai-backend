@@ -1,4 +1,4 @@
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+const fetch = require('node-fetch');
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -30,3 +30,12 @@ export default async function handler(req, res) {
         messages: [{ role: "user", content: message }],
         max_tokens: 80,
         temperature: 0.7,
+      })
+    });
+    const data = await apiRes.json();
+    const content = data.choices?.[0]?.message?.content || "AI error";
+    res.status(200).json({ text: content });
+  } catch (e) {
+    res.status(500).json({ error: "Failed to fetch from OpenAI", detail: e.message });
+  }
+}
